@@ -26,15 +26,43 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#ifndef TFTP_PBUF_H
-#define TFTP_PBUF_H
+#ifndef TFTP_FS_H
+#define TFTP_FS_H
 
-#include_next "lwip/pbuf.h"
+#include "lwip/apps/tftp_server.h"
 
-u16_t pbuf_memcmp(const struct pbuf *p, u16_t offset, const void *s2, u16_t n);
-u16_t pbuf_memfind(const struct pbuf *p, const void *mem, u16_t mem_len, u16_t start_offset);
-u16_t pbuf_strstr(const struct pbuf *p, const char *substr);
+/**
+ * Open file for read/write.
+ * @param fname Filename
+ * @param mode Mode string from TFTP RFC 1350 (netascii, octet, mail)
+ * @param write Flag indicating read (0) or write (!= 0) access
+ * @returns File handle supplied to other functions
+ */
+void* tftp_fs_open(const char* fname, const char* mode, u8_t write);
 
-#define MEMCPY(dst,src,len)             memcpy(dst,src,len)
+/**
+ * Close file handle
+ * @param handle File handle returned by open()
+ */
+void tftp_fs_close(void* handle);
 
-#endif
+/**
+ * Read from file 
+ * @param handle File handle returned by open()
+ * @param buf Target buffer to copy read data to
+ * @param bytes Number of bytes to copy to buf
+ * @returns &gt;= 0: Success; &lt; 0: Error
+ */
+int tftp_fs_read(void* handle, void* buf, int bytes);
+
+/**
+ * Write to file
+ * @param handle File handle returned by open()
+ * @param pbuf PBUF adjusted such that payload pointer points
+ *             to the beginning of write data. In other words,
+ *             TFTP headers are stripped off.
+ * @returns &gt;= 0: Success; &lt; 0: Error
+ */
+int tftp_fs_write(void* handle, struct pbuf* p);
+
+#endif  // TFTP_FS_H

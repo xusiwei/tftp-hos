@@ -26,15 +26,36 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#ifndef TFTP_PBUF_H
-#define TFTP_PBUF_H
 
-#include_next "lwip/pbuf.h"
+#include <stdio.h>
+#include "ohos_init.h"
+#include "cmsis_os2.h"
+#include "wifiiot_at.h"
+#include "tftp_server.h"
+#include "tftp_fs.h"
 
-u16_t pbuf_memcmp(const struct pbuf *p, u16_t offset, const void *s2, u16_t n);
-u16_t pbuf_memfind(const struct pbuf *p, const void *mem, u16_t mem_len, u16_t start_offset);
-u16_t pbuf_strstr(const struct pbuf *p, const char *substr);
+static struct tftp_context g_tftpContext = {0};
 
-#define MEMCPY(dst,src,len)             memcpy(dst,src,len)
+static void TftpdTask(void* arg)
+{
+    (void) arg;
+    g_tftpContext.open = tftp_fs_open;
+    g_tftpContext.close = tftp_fs_close;
+    g_tftpContext.read = tftp_fs_read;
+    g_tftpContext.write = tftp_fs_write;
+    tftp_init(&g_tftpContext);
+}
 
-#endif
+static void TftpdEntry(void)
+{
+    osThreadAttr_t attr = {0};
+
+    attr.name = "TftpdTask";
+    attr.stack_size = 4096;
+    attr.priority = osPriorityNormal;
+
+    if (osThreadNew(TftpdTask, NULL, &attr) == NULL) {
+        printf("[LedEntry] create LedTask failed!\n");
+    }
+}
+SYS_RUN(TftpdEntry);

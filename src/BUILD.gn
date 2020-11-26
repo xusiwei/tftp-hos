@@ -27,7 +27,9 @@
 
 static_library("tftp_server") {
     sources = [
+        "pbuf_port.c",
         "tftp_server.c",
+        "tftp_fs_iot.c",
     ]
 
     defines = [

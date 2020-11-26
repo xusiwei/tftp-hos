@@ -25,11 +25,22 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import("//build/lite/config/component/lite_component.gni")
+static_library("tftp_entry") {
+    sources = [
+        "tftp_entry_iot.c",
+    ]
 
-lite_component("tftp") {
-    features = [
-        "src:tftp_server",
-        "test:tftp_entry",
+    defines = [
+        "LWIP_LITEOS_COMPAT=0",
+        "MEM_LIBC_MALLOC=1"
+    ]
+
+    include_dirs = [
+        "../include",
+        "../include/lwip/apps",
+        "//vendor/hisi/hi3861/hi3861/third_party/lwip_sack/include",
+        "//vendor/hisi/hi3861/hi3861/third_party/lwip_sack/include/lwip",
+        "//kernel/liteos_m/kal",
+        "//base/iot_hardware/interfaces/kits/wifiiot_lite",
     ]
 }
