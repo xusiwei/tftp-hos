@@ -26,17 +26,20 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+#define NDEBUG
 
 #include "tftp_fs.h"
 #include "utils_file.h" // OHOS IoT fs API 
+#include "log.h"
 
-#include <stdio.h>
-#define LOGI(fmt, ...) printf("[%s:%d %s] tftp INFO " fmt "\n", __FILE__, __LINE__, ##__VA_ARGS__)
-#ifndef NDEBUG
-#define LOGD(fmt, ...) printf("[%s:%d %s] tftp DEBUG " fmt "\n", __FILE__, __LINE__, ##__VA_ARGS__)
-#else
-#define LOGD(fmt, ...)
-#endif
+void hexdump(void* ptr, int size)
+{
+    unsigned char* u8ptr = (unsigned char*) ptr;
+    for (int i = 0; i < size; i++) {
+        printf("%02X%c", u8ptr[i], (i+1) % 16 == 0 ? '\n' : ' ');
+    }
+    printf("\n");
+}
 
 /**
  * Open file for read/write.
@@ -83,8 +86,10 @@ void tftp_fs_close(void* handle)
     if (ret < 0) {
         LOGI("UtilsFileClose failed!");
     }
-    LOGI("close %d success!", fd);
+    LOGD("close %d success!", fd);
 }
+
+#define MIN(a, b) ((a) < (b) ? (a) : (b))
 
 /**
  * Read from file 
@@ -102,13 +107,26 @@ int tftp_fs_read(void* handle, void* buf, int bytes)
     }
 
     int fd = (int) handle;
-    int ret = UtilsFileRead(fd, buf, bytes);
+    int ret = UtilsFileSeek(fd, 0, SEEK_END_FS);
+    if (ret < 0) {
+        LOGI("UtilsFileSeek to end failed!");
+        return ret;
+    }
+    unsigned int fileSize = ret;
+    ret = UtilsFileSeek(fd, 0, SEEK_SET_FS);
+    if (ret < 0) {
+        LOGI("UtilsFileSeek to begin failed!");
+        return ret;
+    }
+
+    ret = UtilsFileRead(fd, buf, MIN((unsigned int)bytes, fileSize));
     if (ret < 0) {
         LOGI("UtilsFileRead failed!");
         return ret;
     }
-    LOGD("read %d bytes on fd %d success!", bytes, fd);
-    return 0;
+    LOGD("read %d bytes on fd %d success!", ret, fd);
+    HEXDUMP(buf, ret);
+    return ret;
 }
 
 /**
@@ -128,13 +146,15 @@ int tftp_fs_write(void* handle, struct pbuf* p)
     }
 
     int fd = (int) handle;
+    int nbytes = 0;
     for (; p; p = p->next) {
         int ret = UtilsFileWrite(fd, p->payload, p->len);
         if (ret < 0) {
             LOGI("UtilsFileWrite failed!");
             return ret;
         }
-        LOGD("write %d bytes on fd %d success!", p->len, p->payload);
+        LOGD("write %d bytes on fd %d success!", ret, fd);
+        nbytes += ret;
     }
-    return 0;
+    return nbytes;
 }

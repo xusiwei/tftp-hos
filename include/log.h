@@ -26,51 +26,30 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+#ifndef TFTP_LOG_H
+#define TFTP_LOG_H
 
 #include <stdio.h>
-#include "ohos_init.h"
-#include "cmsis_os2.h"
-#include "wifiiot_at.h"
-#include "tftp_server.h"
-#include "tftp_fs.h"
-#include "net_params.h"
-#include "wifi_connecter.h"
 
-static struct tftp_context g_tftpContext = {0};
+#define LOGI(fmt, ...) printf("[%s:%d %s] tftp INFO " fmt "\n", __FILE__, __LINE__, __FUNCTION__, ##__VA_ARGS__)
+#ifndef NDEBUG
+#define LOGD(fmt, ...) printf("[%s:%d %s] tftp DEBUG " fmt "\n", __FILE__, __LINE__, __FUNCTION__, ##__VA_ARGS__)
 
-static int g_netId = -1;
+#define HEXDUMP(ptr, size) do { \
+    LOGD("HEXDUMP(%s, %d): ", #ptr, size); \
+    hexdump(ptr, size);  \
+} while (0)
 
-static void TftpTask(void* arg)
-{
-    (void) arg;
-    WifiDeviceConfig config = {0};
+#ifdef LWIP_DEBUGF
+#undef LWIP_DEBUGF
+#define LWIP_DEBUGF(dbg, args) printf args
+#endif
 
-    // 准备AP的配置参数
-    strcpy(config.ssid, PARAM_HOTSPOT_SSID);
-    strcpy(config.preSharedKey, PARAM_HOTSPOT_PSK);
-    config.securityType = PARAM_HOTSPOT_TYPE;
+#else
+#define LOGD(fmt, ...)
+#define HEXDUMP(ptr, size)
+#endif
 
-    g_netId = ConnectToHotspot(&config);
-    printf("netId = %d\r\n");
+void hexdump(void* ptr, int size);
 
-    g_tftpContext.open = tftp_fs_open;
-    g_tftpContext.close = tftp_fs_close;
-    g_tftpContext.read = tftp_fs_read;
-    g_tftpContext.write = tftp_fs_write;
-    err_t err = tftp_init(&g_tftpContext);
-    printf("tftp_init %d\r\n", err);
-}
-
-static void TftpEntry(void)
-{
-    osThreadAttr_t attr = {0};
-
-    attr.name = "TftpTask";
-    attr.stack_size = 4096;
-    attr.priority = osPriorityNormal;
-
-    if (osThreadNew(TftpTask, NULL, &attr) == NULL) {
-        printf("[TftpEntry] create TftpTask failed!\n");
-    }
-}
-SYS_RUN(TftpEntry);
+#endif  // TFTP_LOG_H

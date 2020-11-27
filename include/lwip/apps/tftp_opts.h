@@ -93,10 +93,10 @@
 #endif
 
 /**
- * Max. length of TFTP mode
+ * Max. length of TFTP mode (netascii, octet, mail)
  */
 #if !defined TFTP_MAX_MODE_LEN || defined __DOXYGEN__
-#define TFTP_MAX_MODE_LEN     7
+#define TFTP_MAX_MODE_LEN     8
 #endif
 
 /**

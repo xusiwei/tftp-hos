@@ -54,6 +54,7 @@
 #include "lwip/udp.h"
 #include "lwip/timeouts.h"
 #include "lwip/debug.h"
+#include "log.h"
 
 #define TFTP_MAX_PAYLOAD_SIZE 512
 #define TFTP_HEADER_LENGTH    4
@@ -166,6 +167,9 @@ resend_data(void)
     return;
   }
 
+  LOGD("sendto target", tftp_state.last_data);
+  LWIP_DEBUGF(TFTP_DEBUG | LWIP_DBG_STATE, ("tftp udp_sendto %d bytes to ", tftp_state.last_data->len));
+  ip_addr_debug_print(TFTP_DEBUG | LWIP_DBG_STATE, &tftp_state.addr);
   udp_sendto(tftp_state.upcb, p, &tftp_state.addr, tftp_state.port);
   pbuf_free(p);
 }
@@ -201,13 +205,17 @@ send_data(void)
 }
 
 static void
-recv(void *arg, struct udp_pcb *upcb, struct pbuf *p, const ip_addr_t *addr, u16_t port)
+on_recv(void *arg, struct udp_pcb *upcb, struct pbuf *p, const ip_addr_t *addr, u16_t port)
 {
   u16_t *sbuf = (u16_t *) p->payload;
   int opcode;
 
   LWIP_UNUSED_ARG(arg);
   LWIP_UNUSED_ARG(upcb);
+  for (struct pbuf *i = p; i; i = i->next) {
+    LOGD("data arrived %p: %u", sbuf, (u32_t) p->tot_len);
+    HEXDUMP(p->payload, p->tot_len);
+  }
 
   if (((tftp_state.port != 0) && (port != tftp_state.port)) ||
       (!ip_addr_isany_val(tftp_state.addr) && !ip_addr_cmp(&tftp_state.addr, addr))) {
@@ -416,7 +424,7 @@ tftp_init(const struct tftp_context *ctx)
   tftp_state.last_data = NULL;
   tftp_state.upcb      = pcb;
 
-  udp_recv(pcb, recv, NULL);
+  udp_recv(pcb, on_recv, NULL);
 
   return ERR_OK;
 }

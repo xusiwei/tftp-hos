@@ -32,11 +32,6 @@ static_library("tftp_server") {
         "tftp_fs_iot.c",
     ]
 
-    defines = [
-        "LWIP_LITEOS_COMPAT=0",
-        "MEM_LIBC_MALLOC=1"
-    ]
-
     include_dirs = [
         "../include",
         "//vendor/hisi/hi3861/hi3861/third_party/lwip_sack/include",
