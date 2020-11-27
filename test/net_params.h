@@ -26,51 +26,19 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+#ifndef NET_PARAMS_H
+#define NET_PARAMS_H
 
-#include <stdio.h>
-#include "ohos_init.h"
-#include "cmsis_os2.h"
-#include "wifiiot_at.h"
-#include "tftp_server.h"
-#include "tftp_fs.h"
-#include "net_params.h"
-#include "wifi_connecter.h"
+#ifndef PARAM_HOTSPOT_SSID
+#define PARAM_HOTSPOT_SSID "ABCD"   // your AP SSID
+#endif
 
-static struct tftp_context g_tftpContext = {0};
+#ifndef PARAM_HOTSPOT_PSK
+#define PARAM_HOTSPOT_PSK "12345678"  // your AP PSK
+#endif
 
-static int g_netId = -1;
+#ifndef PARAM_HOTSPOT_TYPE
+#define PARAM_HOTSPOT_TYPE WIFI_SEC_TYPE_PSK // defined in wifi_device_config.h
+#endif
 
-static void TftpdTask(void* arg)
-{
-    (void) arg;
-    WifiDeviceConfig config = {0};
-
-    // 准备AP的配置参数
-    strcpy(config.ssid, PARAM_HOTSPOT_SSID);
-    strcpy(config.preSharedKey, PARAM_HOTSPOT_PSK);
-    config.securityType = PARAM_HOTSPOT_TYPE;
-
-    g_netId = ConnectToHotspot(&config);
-    printf("netId = %d\r\n");
-
-    g_tftpContext.open = tftp_fs_open;
-    g_tftpContext.close = tftp_fs_close;
-    g_tftpContext.read = tftp_fs_read;
-    g_tftpContext.write = tftp_fs_write;
-    err_t err = tftp_init(&g_tftpContext);
-    printf("tftp_init %d\r\n", err);
-}
-
-static void TftpdEntry(void)
-{
-    osThreadAttr_t attr = {0};
-
-    attr.name = "TftpdTask";
-    attr.stack_size = 4096;
-    attr.priority = osPriorityNormal;
-
-    if (osThreadNew(TftpdTask, NULL, &attr) == NULL) {
-        printf("[LedEntry] create LedTask failed!\n");
-    }
-}
-SYS_RUN(TftpdEntry);
+#endif  // NET_PARAMS_H

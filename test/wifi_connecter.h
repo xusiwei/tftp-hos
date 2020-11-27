@@ -27,50 +27,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <stdio.h>
-#include "ohos_init.h"
-#include "cmsis_os2.h"
-#include "wifiiot_at.h"
-#include "tftp_server.h"
-#include "tftp_fs.h"
-#include "net_params.h"
-#include "wifi_connecter.h"
+#ifndef WIFI_CONNECTER_H
+#define WIFI_CONNECTER_H
 
-static struct tftp_context g_tftpContext = {0};
+#include "wifi_device.h"
 
-static int g_netId = -1;
+int ConnectToHotspot(WifiDeviceConfig* apConfig);
 
-static void TftpdTask(void* arg)
-{
-    (void) arg;
-    WifiDeviceConfig config = {0};
+void DisconnectWithHotspot(int netId);
 
-    // 准备AP的配置参数
-    strcpy(config.ssid, PARAM_HOTSPOT_SSID);
-    strcpy(config.preSharedKey, PARAM_HOTSPOT_PSK);
-    config.securityType = PARAM_HOTSPOT_TYPE;
-
-    g_netId = ConnectToHotspot(&config);
-    printf("netId = %d\r\n");
-
-    g_tftpContext.open = tftp_fs_open;
-    g_tftpContext.close = tftp_fs_close;
-    g_tftpContext.read = tftp_fs_read;
-    g_tftpContext.write = tftp_fs_write;
-    err_t err = tftp_init(&g_tftpContext);
-    printf("tftp_init %d\r\n", err);
-}
-
-static void TftpdEntry(void)
-{
-    osThreadAttr_t attr = {0};
-
-    attr.name = "TftpdTask";
-    attr.stack_size = 4096;
-    attr.priority = osPriorityNormal;
-
-    if (osThreadNew(TftpdTask, NULL, &attr) == NULL) {
-        printf("[LedEntry] create LedTask failed!\n");
-    }
-}
-SYS_RUN(TftpdEntry);
+#endif  // WIFI_CONNECTER_H

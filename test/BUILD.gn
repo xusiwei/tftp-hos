@@ -28,19 +28,16 @@
 static_library("tftp_entry") {
     sources = [
         "tftp_entry_iot.c",
-    ]
-
-    defines = [
-        "LWIP_LITEOS_COMPAT=0",
-        "MEM_LIBC_MALLOC=1"
+        "wifi_connecter.c",
     ]
 
     include_dirs = [
         "../include",
         "../include/lwip/apps",
-        "//vendor/hisi/hi3861/hi3861/third_party/lwip_sack/include",
-        "//vendor/hisi/hi3861/hi3861/third_party/lwip_sack/include/lwip",
         "//kernel/liteos_m/kal",
         "//base/iot_hardware/interfaces/kits/wifiiot_lite",
+        "//foundation/communication/interfaces/kits/wifi_lite/wifiservice/",
+        "//vendor/hisi/hi3861/hi3861/third_party/lwip_sack/include/lwip",
+        "//vendor/hisi/hi3861/hi3861/third_party/lwip_sack/include",
     ]
 }
