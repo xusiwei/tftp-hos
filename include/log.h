@@ -31,25 +31,20 @@
 
 #include <stdio.h>
 
-#define LOGI(fmt, ...) printf("[%s:%d %s] tftp INFO " fmt "\n", __FILE__, __LINE__, __FUNCTION__, ##__VA_ARGS__)
-#ifndef NDEBUG
-#define LOGD(fmt, ...) printf("[%s:%d %s] tftp DEBUG " fmt "\n", __FILE__, __LINE__, __FUNCTION__, ##__VA_ARGS__)
+#define LOGI(fmt, ...) printf("tftp: INFO [%s:%d] " fmt "\n", __FILE__, __LINE__, ##__VA_ARGS__)
 
+#ifndef NDEBUG
+#define LOGD(fmt, ...) printf("tftp: DEBUG [%s:%d]  " fmt "\n", __FILE__, __LINE__, ##__VA_ARGS__)
+
+void hexdump(void* ptr, int size);
 #define HEXDUMP(ptr, size) do { \
     LOGD("HEXDUMP(%s, %d): ", #ptr, size); \
     hexdump(ptr, size);  \
 } while (0)
 
-#ifdef LWIP_DEBUGF
-#undef LWIP_DEBUGF
-#define LWIP_DEBUGF(dbg, args) printf args
-#endif
-
 #else
 #define LOGD(fmt, ...)
 #define HEXDUMP(ptr, size)
 #endif
-
-void hexdump(void* ptr, int size);
 
 #endif  // TFTP_LOG_H

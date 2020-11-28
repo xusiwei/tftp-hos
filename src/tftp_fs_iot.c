@@ -26,7 +26,7 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#define NDEBUG
+#define NDEBUG // comment this line to enable debug log
 
 #include "tftp_fs.h"
 #include "utils_file.h" // OHOS IoT fs API 

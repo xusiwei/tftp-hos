@@ -167,9 +167,9 @@ resend_data(void)
     return;
   }
 
-  LOGD("sendto target", tftp_state.last_data);
-  LWIP_DEBUGF(TFTP_DEBUG | LWIP_DBG_STATE, ("tftp udp_sendto %d bytes to ", tftp_state.last_data->len));
+  LWIP_DEBUGF(TFTP_DEBUG | LWIP_DBG_STATE, ("tftp: send %d bytes to ", tftp_state.last_data->len));
   ip_addr_debug_print(TFTP_DEBUG | LWIP_DBG_STATE, &tftp_state.addr);
+  LWIP_DEBUGF(TFTP_DEBUG | LWIP_DBG_STATE, ("\n"));
   udp_sendto(tftp_state.upcb, p, &tftp_state.addr, tftp_state.port);
   pbuf_free(p);
 }
@@ -213,7 +213,6 @@ on_recv(void *arg, struct udp_pcb *upcb, struct pbuf *p, const ip_addr_t *addr, 
   LWIP_UNUSED_ARG(arg);
   LWIP_UNUSED_ARG(upcb);
   for (struct pbuf *i = p; i; i = i->next) {
-    LOGD("data arrived %p: %u", sbuf, (u32_t) p->tot_len);
     HEXDUMP(p->payload, p->tot_len);
   }
 

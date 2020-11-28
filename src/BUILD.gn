@@ -32,6 +32,13 @@ static_library("tftp_server") {
         "tftp_fs_iot.c",
     ]
 
+    # comment follow lines to disable logging
+    defines = [
+        "LWIP_DEBUG",
+        "TFTP_DEBUG=0xA0",
+        "LWIP_DBG_TYPES_ON=LWIP_DBG_ON"
+    ]
+
     include_dirs = [
         "../include",
         "//vendor/hisi/hi3861/hi3861/third_party/lwip_sack/include",
